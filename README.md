@@ -1,4 +1,4 @@
-# Migração das bases de dados da VM1 para VM2. 
+# Migração das bases de dados SQL Server da VM1 para VM2. 
 
 Aqui compartilho alguns passos da migração que realizei das bases de dados do meu laboratório para outro servidor virtual.
 
