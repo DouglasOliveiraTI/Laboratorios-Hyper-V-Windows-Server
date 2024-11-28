@@ -1,0 +1,52 @@
+DECLARE @data AS varchar(10)
+DECLARE @caminho AS varchar(255)
+DECLARE @nome_bk AS varchar(255)
+DECLARE @extensao AS varchar(5)
+DECLARE @bd AS varchar(50)
+DECLARE @comando AS varchar(255)
+DECLARE @destino AS varchar(30)
+DECLARE @SQL AS VARCHAR(MAX)
+
+-- Caminho onde os backups serão armazenados
+SET @caminho = 'C:\Backup\'  -- Ajuste para o caminho desejado
+
+-- Extensão do arquivo de backup
+SET @extensao = '.BAK'
+
+-- Data no formato desejado
+SET @data = REPLACE(CONVERT(varchar(20), GETDATE(), 103), '/', '')
+
+-- Comando básico de backup
+SET @comando = 'BACKUP DATABASE '
+
+-- Destino do arquivo de backup
+SET @destino = ' TO DISK = N''' 
+
+-- Loop para iterar sobre todas as bases de dados
+DECLARE db_cursor CURSOR FOR
+SELECT name
+FROM sys.databases
+WHERE state_desc = 'ONLINE'  -- Considerando apenas as bases de dados online
+  AND name NOT IN ('master', 'tempdb', 'model', 'msdb')  -- Excluindo bases do sistema
+
+OPEN db_cursor
+FETCH NEXT FROM db_cursor INTO @bd
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    -- Gerando o nome do backup para cada base de dados
+    SET @nome_bk = @bd + 'BAK'
+
+    -- Montando o comando de backup
+    SET @SQL = @comando + @bd + @destino + @caminho + @nome_bk + @data + @extensao + ''''
+
+    -- Executando o comando de backup
+    EXEC(@SQL)
+
+    -- Obtendo a próxima base de dados
+    FETCH NEXT FROM db_cursor INTO @bd
+END
+
+-- Fechando o cursor
+CLOSE db_cursor
+DEALLOCATE db_cursor
